@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: six-seven-bot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: six_seven_bot
+    ports:
+      - "5432:5432"
+    volumes:
+      - six_seven_bot_pg:/var/lib/postgresql/data
+
+volumes:
+  six_seven_bot_pg:
