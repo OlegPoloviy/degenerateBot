@@ -5,9 +5,9 @@
   "description": "Telegram group style/context bot backend built with NestJS and TypeORM.",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
+    "start": "node scripts/telegram-lifecycle-runner.js start",
+    "start:dev": "node scripts/telegram-lifecycle-runner.js dev",
+    "start:prod": "node scripts/telegram-lifecycle-runner.js prod",
     "build": "nest build",
     "typeorm": "typeorm-ts-node-commonjs -d src/database/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:run",

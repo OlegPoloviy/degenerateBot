@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Telegraf } from "telegraf";
 import { AiService } from "../ai/ai.service";
@@ -372,4 +367,5 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     const value = this.configService.get<string>(key);
     return value === undefined ? defaultValue : Number(value);
   }
+
 }
