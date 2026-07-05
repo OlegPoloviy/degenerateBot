@@ -87,7 +87,13 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     bot.help(async (ctx) => {
       await ctx.reply(
-        ["/ask <текст>", "/rebuild_style", "/style", "/health"].join("\n"),
+        [
+          "/ask <текст>",
+          "/roast @user",
+          "/rebuild_style",
+          "/style",
+          "/health",
+        ].join("\n"),
       );
     });
 
@@ -103,6 +109,10 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       await this.handleIncomingText(ctx as unknown as TelegramTextContext, {
         forceReply: true,
       });
+    });
+
+    bot.command("roast", async (ctx) => {
+      await this.handleRoast(ctx as unknown as TelegramTextContext);
     });
 
     bot.command("rebuild_style", async (ctx) => {
@@ -205,6 +215,32 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private async handleRoast(ctx: TelegramTextContext): Promise<void> {
+    if (!this.isGroupChat(ctx.chat.type) || ctx.from?.is_bot) {
+      return;
+    }
+
+    const target = this.parseRoastTarget(ctx.message.text);
+
+    if (!target) {
+      await ctx.reply("вкажи користувача, наприклад: /roast @nick");
+      return;
+    }
+
+    await this.chatMemory.saveTelegramMessage({
+      chatId: ctx.chat.id,
+      messageId: ctx.message.message_id,
+      userId: ctx.from?.id,
+      username: ctx.from?.username,
+      firstName: ctx.from?.first_name,
+      text: ctx.message.text,
+    });
+
+    const roastPrompt = `Підїби ${target} у стилі цієї групи. Відповідь має бути коротка, дотепна, дружня й з легким гумором, без жорстоких образ.`;
+
+    await this.replyWithAi(ctx, roastPrompt);
+  }
+
   private async handleRebuildStyle(ctx: TelegramTextContext): Promise<void> {
     if (!this.isGroupChat(ctx.chat.type)) {
       await ctx.reply("це працює тільки в групі");
@@ -305,6 +341,17 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     await this.chatMemory.saveStyleProfile(chatId, styleProfile);
 
     return styleProfile;
+  }
+
+  private parseRoastTarget(text: string): string | null {
+    const withoutCommand = text.replace(/^\/roast(?:@\w+)?\s*/i, "").trim();
+
+    if (!withoutCommand) {
+      return null;
+    }
+
+    const mention = withoutCommand.match(/@[\w]+/);
+    return mention?.[0] ?? withoutCommand;
   }
 
   private isGroupChat(type: string): boolean {
